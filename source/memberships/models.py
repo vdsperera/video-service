@@ -1,7 +1,9 @@
 from django.db import models
 from django.conf import settings
 from django.db.models.signals import post_save
-import stripe;
+import stripe
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # Create your models here.
 
@@ -33,8 +35,8 @@ class UserMembership(models.Model):
 
 def post_save_membership_create(sender, instance, created, *args, **kwargs):
     if created:
-        UserMembership.objects.get_or_created(user = instance)    
-    user_membership, created = UserMembership.objects.get_or_created(user = instance)
+        UserMembership.objects.get_or_create(user = instance)    
+    user_membership, created = UserMembership.objects.get_or_create(user = instance)
     if user_membership.stripe_customer_id is None or user_membership.stripe_customer_id == '':
         new_customer_id = stripe.Customer.create(email = instance.email)
         user_membership.stripe_customer_id = new_customer_id['id']
